@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import json, logging, os, atexit
 #from model import run_model
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO
 
 ####### Model #######
 # Model design
@@ -23,7 +23,6 @@ import time
 #####################
 
 app = Flask(__name__, static_url_path='')
-socketio = SocketIO(app)
 
 # On IBM Cloud Cloud Foundry, get the port number from the environment variable PORT
 # When running this app on the local machine, default the port to 8000
@@ -237,7 +236,7 @@ class StreetModel(ap.Model):
         socket.SendData(status_json)
         print(self.agents_status)
         ####### Socket #######
-        send('message', status_json)
+        socketio.emit('event', status_json)
         
         self.num_moves += self.p.n_agents# print(self.num_moves)
         time.sleep(0.2)
