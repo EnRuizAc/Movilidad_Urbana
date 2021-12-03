@@ -8,7 +8,7 @@ app = Flask(__name__, static_url_path='')
 port = int(os.getenv('PORT', 8000))
 
 
-@app.route('/')
+@app.route('/Server')
 def root():
     return jsonify([{"message":"Pruebas Tec, from IBM Cloud!"}])
 

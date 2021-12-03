@@ -16,8 +16,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='python-hello-world-flask',
-    #version='1.0.0',
-    version='3.5.0',
+    version='1.0.0',
+    #version='3.5.0',
     description='Hello World app for running Python apps on Bluemix',
     long_description=long_description,
     url='https://github.com/IBM-Bluemix/python-hello-world-flask',
