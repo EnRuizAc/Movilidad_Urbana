@@ -3,3 +3,4 @@ ipython>=7.30.1
 matplotlib>=3.4.3
 seaborn>=0.11.2
 flask>=1.0.0
+Flask-SocketIO>=5.1.1
