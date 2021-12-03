@@ -27,6 +27,9 @@ public class UdpSocket : MonoBehaviour
     [SerializeField] int txPort = 8001; // port to send data to Python on
 
     public SpawnManager spawnManager;
+    // Variable para manejar los hilos del socket y de Unity.
+    bool isThereNewData = false;
+    InfoAgents agents;
 
     int i = 0; // DELETE THIS: Added to show sending data from Unity to Python via UDP
 
@@ -58,7 +61,7 @@ public class UdpSocket : MonoBehaviour
         }
     }
 
-    void Awake()
+    void Start()
     {
         // Create remote endpoint (to Matlab) 
         remoteEndPoint = new IPEndPoint(IPAddress.Parse(IP), txPort);
@@ -76,6 +79,15 @@ public class UdpSocket : MonoBehaviour
         print("UDP Comms Initialised");
 
         StartCoroutine(SendDataCoroutine()); // DELETE THIS: Added to show sending data from Unity to Python via UDP
+    }
+
+    private void Update()
+    {
+        if (isThereNewData)
+        {
+            isThereNewData = false;
+            spawnManager.UpdateAgents(agents);
+        }
     }
 
     // Receive data, update packets received
@@ -107,8 +119,9 @@ public class UdpSocket : MonoBehaviour
             isTxStarted = true;
         }
 
-        var agents = JsonUtility.FromJson<InfoAgents>(input);
-        spawnManager.UpdateAgents(agents);
+        InfoAgents agents = JsonUtility.FromJson<InfoAgents>(input);
+        this.agents = agents;
+        isThereNewData = true;
         Debug.Log("X value: " + agents.Cars[0].Position.x);
     }
 
@@ -134,12 +147,13 @@ public class InfoCar
 {
     public int CarId;
     public InfoPosition Position;
+    public string Direction;
 }
 
 [Serializable]
 public class InfoPosition
 {
-    public string x;
+    public float x;
     public float y;
     public float z;
 }
