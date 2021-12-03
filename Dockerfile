@@ -15,4 +15,4 @@ COPY . /app
 
 ENTRYPOINT [ "python" ]
 
-CMD [ "traffic.py" ]
+CMD [ "model.py" ]
