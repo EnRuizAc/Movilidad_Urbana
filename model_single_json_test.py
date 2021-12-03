@@ -230,6 +230,7 @@ def animation_plot(model, ax):
     ax.set_title(f"Movilidad Urbana \n Tiempo-Paso: {model.t}, # de Movimientos: {model.num_moves}")
 
 def run_model():
+    STEPS["steps"] = []
     fig, ax = plt.subplots()
     model = StreetModel(parameters)
     animation = ap.animate(model, fig, ax, animation_plot)
