@@ -1,3 +1,4 @@
+"""
 # Model design
 import agentpy as ap
 
@@ -229,3 +230,4 @@ fig, ax = plt.subplots()
 model = StreetModel(parameters)
 animation = ap.animate(model, fig, ax, animation_plot)
 IPython.display.HTML(animation.to_jshtml())
+"""
