@@ -36,8 +36,8 @@ class TrafficLight(ap.Agent):
             elif self.typeColor == 5:
                 self.typeColor = 6
                 self.time_duration = 0
-            else:
-                self.time_duration += 1
+        else:
+            self.time_duration += 1
 
 class CarBot(ap.Agent):
     
