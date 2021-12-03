@@ -1,0 +1,4 @@
+---
+applications:
+ - name: testing-enruiz
+   random-route: true
