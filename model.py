@@ -16,7 +16,7 @@ import json
 import time
 
 # Create UDP socket to use for sending (and receiving)
-socket = U.UdpComms(udpIP="169.47.124.22", portTX=8000, portRX=8001,
+socket = U.UdpComms(udpIP="127.0.0.1", portTX=8000, portRX=8001,
                   enableRX=True, suppressWarnings=True)
 
 
