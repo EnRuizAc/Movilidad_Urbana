@@ -10,6 +10,7 @@ port = int(os.getenv('PORT', 8000))
 
 @app.route('/')
 def root():
+    os.system('python model.py')
     return jsonify([{"message":"Pruebas Tec, from IBM Cloud!"}])
 
 if __name__ == '__main__':
