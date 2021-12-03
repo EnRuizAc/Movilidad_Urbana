@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import json, logging, os, atexit
-from model_single_json_test import run_model
+from model import run_model
 
 app = Flask(__name__, static_url_path='')
 

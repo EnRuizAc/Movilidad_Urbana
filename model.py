@@ -11,14 +11,33 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # Connection
-import UdpComms as U
+#import UdpComms as U
 import json
 import time
 
-# Create UDP socket to use for sending (and receiving)
-socket = U.UdpComms(udpIP="127.0.0.1", portTX=8000, portRX=8001,
-                  enableRX=True, suppressWarnings=True)
+STEPS = {"steps": []}
 
+class TrafficLight(ap.Agent):
+    def setup(self):
+        # Initiate agent attributes
+        # 6 = red 5 = green
+        self.typeColor = 6
+        self.time_duration = 0
+        self.limit = 5
+        self.direction = ""
+        self.position = (0, 0)
+    def set_direction(self, direction):
+            self.direction = direction
+
+    def change_color(self):
+        if self.time_duration == self.limit:
+            if self.typeColor == 6:
+                self.typeColor = 5
+            elif self.typeColor == 5:
+                self.typeColor = 6
+                self.time_duration = 0
+            else:
+                self.time_duration += 1
 
 class CarBot(ap.Agent):
     
@@ -31,7 +50,7 @@ class CarBot(ap.Agent):
         self.direction = ""
 
     def set_direction(self, direction):
-      self.direction = direction
+        self.direction = direction
 
     def handle_intersection(self, intersection):
         # change direction randomly according to intersection options
@@ -40,178 +59,193 @@ class CarBot(ap.Agent):
         return new_direction
 
     def find_new_cell(self, road, intersections):
+        for a in self.grid.agents:
+            if type(a) == TrafficLight:
+                if a.direction == "up":
+                    light_up = a
+                if a.direction == "down":
+                    light_down = a
+                if a.direction == "right":
+                    light_right = a
+                if a.direction == "left":
+                    light_left = a
+
         # get current position
         i,j = self.grid.positions[self]
         new_pos = (i,j)
         new_direction = self.direction
-        # check if car is at an intersection
-        if (i,j) in intersections:
-            new_direction = self.handle_intersection(intersections[(i,j)])
-        # move to the right
-        if self.direction == "right":
-            # check if road is open
-            if (i,j+1) in road and (i,j+1) in self.grid.empty and \
-                    ((i,j+2) not in road or (i,j+2) in self.grid.empty):
-                self.grid.move_by(self, (0, 1))
-                new_pos = (i,j+1)
-        # move to the left
-        elif self.direction == "left":
-            # check if road is open
-            if (i,j-1) in road and (i,j-1) in self.grid.empty and \
-                    ((i,j-2) not in road or (i,j-2) in self.grid.empty):
-                self.grid.move_by(self, (0, -1))
-                new_pos = (i,j-1)
-        # move down
-        elif self.direction == "down":
-            # check if road is open
-            if (i+1,j) in road and (i+1,j) in self.grid.empty and \
-                    ((i+2,j) not in road or (i+2,j) in self.grid.empty):
-                self.grid.move_by(self, (1, 0))
-                new_pos = (i+1,j)
-        # move up
-        elif self.direction == "up":
-            # check if road is open
-            if (i-1,j) in road and (i-1,j) in self.grid.empty and \
-                    ((i-2,j) not in road or (i-2,j) in self.grid.empty):
-                self.grid.move_by(self, (-1, 0))
-                new_pos = (i-1,j)
+
+        #check if car is near traffic light
+        can_move = True
+        if new_pos == light_up.position or new_pos == light_down.position:
+            if light_up.typeColor == 6 or light_down.typeColor == 6:
+                can_move = False
+        if new_pos == light_right.position or new_pos == light_left.position:
+            if light_right.typeColor == 6 or light_right.typeColor == 6:
+                can_move = False
+
+        if can_move:
+            # check if car is at an intersection
+            if (i,j) in intersections:
+                new_direction = self.handle_intersection(intersections[(i,j)])
+            # move to the right
+            if self.direction == "right":
+                # check if road is open
+                if (i,j+1) in road and (i,j+1) in self.grid.empty and \
+                        ((i,j+2) not in road or (i,j+2) in self.grid.empty):
+                    self.grid.move_by(self, (0, 1))
+                    new_pos = (i,j+1)
+            # move to the left
+            elif self.direction == "left":
+                # check if road is open
+                if (i,j-1) in road and (i,j-1) in self.grid.empty and \
+                        ((i,j-2) not in road or (i,j-2) in self.grid.empty):
+                    self.grid.move_by(self, (0, -1))
+                    new_pos = (i,j-1)
+            # move down
+            elif self.direction == "down":
+                # check if road is open
+                if (i+1,j) in road and (i+1,j) in self.grid.empty and \
+                        ((i+2,j) not in road or (i+2,j) in self.grid.empty):
+                    self.grid.move_by(self, (1, 0))
+                    new_pos = (i+1,j)
+            # move up
+            elif self.direction == "up":
+                # check if road is open
+                if (i-1,j) in road and (i-1,j) in self.grid.empty and \
+                        ((i-2,j) not in road or (i-2,j) in self.grid.empty):
+                    self.grid.move_by(self, (-1, 0))
+                    new_pos = (i-1,j)
 
         return new_pos, new_direction
 
-
-class Cell(ap.Agent):
-    def setup(self):
-        # Initiate agent attributes
-        self.grid = self.model.grid
-        self.random = self.model.random
-        self.clean = False
-        self.typeColor = 4
-        self.status = 0
-
-    def find_new_cell(self):
-        if self.status == 1:
-            num1 = 0
-            num2 = 0
-            while (num1 == 0 and num2 == 0):
-                num1 = randrange(-1, 0)
-                num2 = randrange(-1, 0)
-            self.grid.move_by(self, (num1, num2))
-
 class Intersection:
-  def __init__(self, pos, type, options):
-    self.pos = pos
-    self.type = type
-    self.options = options
+    def __init__(self, pos, type, options):
+        self.pos = pos
+        self.type = type
+        self.options = options
 
 class StreetModel(ap.Model):
-
     def setup_street(self):
-      self.street_coords = set()
-      for i in range(20):
-        self.street_coords.add((9,i))
-        self.street_coords.add((10,i))
-        self.street_coords.add((i,9))
-        self.street_coords.add((i,10))
-      
-      self.intersections = {}
-      self.intersections[(9,9)] = Intersection((9,9),"upper-left",["down","left"])
-      self.intersections[(9,10)] = Intersection((9,10),"upper-right",["up","left"])
-      self.intersections[(10,9)] = Intersection((10,9),"lower-left",["down","right"])
-      self.intersections[(10,10)] = Intersection((10,10),"lower-left",["up","right"])
-      #self.cellAgents = ap.AgentList(self, 76, Cell)
-      #self.grid.add_agents(self.cellAgents, empty=True, positions=list(self.street_coords))
+        self.street_coords = set()
+        for i in range(20):
+            self.street_coords.add((9,i))
+            self.street_coords.add((10,i))
+            self.street_coords.add((i,9))
+            self.street_coords.add((i,10))
+
+        self.intersections = {}
+        self.intersections[(9,9)] = Intersection((9,9),"upper-left",["down","left"])
+        self.intersections[(9,10)] = Intersection((9,10),"upper-right",["up","left"])
+        self.intersections[(10,9)] = Intersection((10,9),"lower-left",["down","right"])
+        self.intersections[(10,10)] = Intersection((10,10),"lower-left",["up","right"])
 
     def setup_cars(self):
-      car_init_coords = [(10,0),(10,0),(0,9),(19,10),(19,10)]
-      self.robotAgents = ap.AgentList(self, 5, CarBot)
-      self.grid.add_agents(self.robotAgents, positions=car_init_coords, empty=True)
-      for a in self.grid.agents:
-          i,j = self.grid.positions[a]
-          if i == 10:
-              a.set_direction("right")
-          elif i == 0 and j == 9:
-              a.set_direction("down")
-          elif i == 19 and j == 10:
-              a.set_direction("up")
-      #self.robotAgents = ap.AgentList(self, 1, CarBot(direction="down"))
-      #self.grid.add_agents(self.robotAgents, positions=[(0,9)], empty=True)
-
+        car_init_coords = [(10,0),(10,0),(0,9),(19,10),(19,10)]
+        self.robotAgents = ap.AgentList(self, 5, CarBot)
+        tl_init_coords = [(8,8),(8,11),(11,8),(11,11)]
+        self.trafficLight = ap.AgentList(self, 4, TrafficLight)
+        self.grid.add_agents(self.trafficLight, positions=tl_init_coords, empty=True)
+        self.grid.add_agents(self.robotAgents, positions=car_init_coords, empty=True)
+        for a in self.grid.agents:
+            if type(a) == TrafficLight:
+                i,j = self.grid.positions[a]
+                if i == 8 and j == 8:
+                    a.typeColor = 6
+                    a.set_direction("right")
+                    a.position = (8, 9)
+                elif i == 8 and j == 11:
+                    a.typeColor = 5
+                    a.set_direction("down")
+                    a.position = (9, 11)
+                elif i == 11 and j == 8:
+                    a.typeColor = 5
+                    a.set_direction("up")
+                    a.position = (10, 8)
+                elif i == 11 and j == 11:
+                    a.typeColor = 6
+                    a.set_direction("left")
+                    a.position = (11, 10)
+            elif type(a) == CarBot:
+                i,j = self.grid.positions[a]    
+                if i == 10:
+                    a.set_direction("right")
+                elif i == 0 and j == 9:
+                    a.set_direction("down")
+                elif i == 19 and j == 10:
+                    a.set_direction("up")
+    
     def setup_agents_status(self):
         # Build initial status dictionary
-        self.agents_status = {"Cars": []}
+        init_agents_status = {"Cars": [], "TrafficLights": []}
         for a in self.grid.agents:
-            start_pos =  self.grid.positions[a]
-            new_car_dict = {
-                "CarId": a.id,
-                "Position":{
-                    "x": start_pos[0],
-                    "y": 0,
-                    "z": start_pos[1]
-                },
-                "Direction": a.direction
-            }
-            self.agents_status["Cars"].append(new_car_dict)
+            if type(a) == CarBot:
+                start_pos =  self.grid.positions[a]
+                new_car_dict = {
+                    "CarId": a.id,
+                    "Position":{
+                        "x": start_pos[0],
+                        "y": 0,
+                        "z": start_pos[1]
+                    },
+                    "Direction": a.direction
+                }
+                init_agents_status["Cars"].append(new_car_dict)
+            elif type(a) == TrafficLight:
+                start_pos =  self.grid.positions[a]
+                new_light_dict = {
+                    "LightId": a.id,
+                    "TypeColor": a.typeColor,
+                    "Direction": a.direction,
+                }
+                init_agents_status["TrafficLights"].append(new_light_dict)
 
-        # Send initial status
-        status_json = json.dumps(self.agents_status)
-        socket.SendData(status_json)
+        STEPS["steps"].append(init_agents_status)
     
     def setup(self):
         #Parameters
         h = self.p.height 
         w = self.p.width
-        # d = self.d = int(self.p.density * (w * h))
         n = self.n = self.p.n_agents
 
         self.num_moves = 0
 
         #Create grid agents
         self.grid = ap.Grid(self, (w, h), track_empty=True, check_border=True)
-        #self.robotAgents = ap.AgentList(self, n, CarBot)
         self.setup_street()
-        #self.cellAgents = ap.AgentList(self, d, Cell)
-        #self.grid.add_agents(self.cellAgents, empty=True, random=True)
-        #self.grid.add_agents(self.robotAgents, positions = None, empty=True, random=False)
         self.setup_cars()
 
         self.setup_agents_status()
 
-    #def update(self):
-    #    #move unhappy people to new location
-    #    self.allRobots = self.robotAgents.select(self.robotAgents.id > 0)
-    #    #self.allCells = self.cellAgents.select(self.cellAgents.typeColor == 1)
-#
-    #    #Stop simulation if no fire is left
-    #    # if self.d == 0:
-    #    #    self.stop()
-
     def step(self):
-        #self.allRobots.find_new_cell(self.street_coords)
-        #for a in self.allRobots:
-          #if a.type == "Car":
-            #key = "Car (Obj " + str(a.id) + ")"
-            #print(a, ":", a.id)
-          #print(self.grid.positions[a])
-        i = 0
+        agents_status = {"Cars": [], "TrafficLights": []}
         for a in self.grid.agents:
-            new_pos, new_direction = a.find_new_cell(self.street_coords, self.intersections)
-            self.agents_status["Cars"][i]["Position"]["x"] = new_pos[0]
-            self.agents_status["Cars"][i]["Position"]["z"] = new_pos[1]
-            self.agents_status["Cars"][i]["Direction"] = new_direction
-            i += 1
+            if type(a) == TrafficLight:
+                a.change_color()
+                new_light_dict = {
+                "LightId": a.id,
+                "TypeColor": a.typeColor,
+                "Direction": a.direction,
+                }
+                agents_status["TrafficLights"].append(new_light_dict)
+            elif type(a) == CarBot:
+                new_pos, new_direction = a.find_new_cell(self.street_coords, self.intersections)
+                new_car_dict = {
+                "CarId": a.id,
+                "Position":{
+                    "x": new_pos[0],
+                    "y": 0,
+                    "z": new_pos[1]
+                },
+                "Direction": new_direction
+                }
+                agents_status["Cars"].append(new_car_dict)
 
-        # Send new status
-        status_json = json.dumps(self.agents_status)
-        socket.SendData(status_json)
-        print(self.agents_status)
-        
+        STEPS["steps"].append(agents_status)
         self.num_moves += self.p.n_agents# print(self.num_moves)
-        time.sleep(0.2)
-
 
 parameters = {
     'n_agents': 1,
-    # 'density': 0.3,
     'height': 20,
     'width': 20,
     'steps': 20
@@ -219,13 +253,16 @@ parameters = {
 
 def animation_plot(model, ax):
     gridPosition = model.grid.attr_grid('typeColor')
-    color_dict = {0:'#FFFF00', 1:'#0000FF', 2:'#FFA500', 3:'#b3b3b3', 4: '#808080', None:'#ffffff'}
+    color_dict = {0:'#FFA500', 1:'#0000FF', 2:'#FFA500', 3:'#b3b3b3', 4: '#808080', 5: '#008000', 6: '#FF0000', None:'#ffffff'}
     ap.gridplot(gridPosition, ax=ax, color_dict=color_dict, convert=True)
     total = model.p.height = model.p.width
-    # percent = (total -model.d) * 100 / (total)
     ax.set_title(f"Movilidad Urbana \n Tiempo-Paso: {model.t}, # de Movimientos: {model.num_moves}")
 
-fig, ax = plt.subplots()
-model = StreetModel(parameters)
-animation = ap.animate(model, fig, ax, animation_plot)
-IPython.display.HTML(animation.to_jshtml())
+def run_model():
+    STEPS["steps"] = []
+    fig, ax = plt.subplots()
+    model = StreetModel(parameters)
+    animation = ap.animate(model, fig, ax, animation_plot)
+    IPython.display.HTML(animation.to_jshtml())
+
+    return STEPS
