@@ -1,4 +1,4 @@
-
+"""
 # Model design
 import agentpy as ap
 
@@ -226,8 +226,8 @@ def animation_plot(model, ax):
     # percent = (total -model.d) * 100 / (total)
     ax.set_title(f"Movilidad Urbana \n Tiempo-Paso: {model.t}, # de Movimientos: {model.num_moves}")
 
-def run_model():
-    fig, ax = plt.subplots()
-    model = StreetModel(parameters)
-    animation = ap.animate(model, fig, ax, animation_plot)
-    IPython.display.HTML(animation.to_jshtml())
+fig, ax = plt.subplots()
+model = StreetModel(parameters)
+animation = ap.animate(model, fig, ax, animation_plot)
+IPython.display.HTML(animation.to_jshtml())
+"""
