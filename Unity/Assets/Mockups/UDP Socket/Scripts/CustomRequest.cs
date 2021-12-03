@@ -9,13 +9,11 @@ using UnityEngine.UI;
 public class CustomRequest : MonoBehaviour
 {
     public string url = "https://multiagenteurbano-empathic-waterbuck.mybluemix.net/";
-    //public Text statusText;
-    //public Text titleResponse;
+    public SpawnManager spawnManager;
 
     private void Start()
     {
         Debug.Log("Starting request");
-        //statusText.text = "Do Request";
         StartCoroutine(GetRequest(url));
     }
 
@@ -38,16 +36,14 @@ public class CustomRequest : MonoBehaviour
                     //string jsonString = Encoding.UTF8.GetString(data);
                     
                     string jsonString = webRequest.downloadHandler.text;
-                    Debug.Log(":\nReceived: " + jsonString);
+                    //Debug.Log(":\nReceived: " + jsonString);
 
                     InfoSteps modelSteps = JsonUtility.FromJson<InfoSteps>(jsonString);
-                    //titleResponse.text = myObject.title;
                     Debug.Log(modelSteps.steps.Count);
-
+                    spawnManager.RunModel(modelSteps);
                     break;
             }
 
-            //statusText.text = "Finished";
         }
     }
 }
@@ -64,18 +60,18 @@ public class InfoStatus
     public List<InfoCar> Cars;
 }
 
-//[Serializable]
-//public class InfoCar
-//{
-//    public int CarId;
-//    public InfoPosition Position;
-//    public string Direction;
-//}
+[Serializable]
+public class InfoCar
+{
+    public int CarId;
+    public InfoPosition Position;
+    public string Direction;
+}
 
-//[Serializable]
-//public class InfoPosition
-//{
-//    public float x;
-//    public float y;
-//    public float z;
-//}
+[Serializable]
+public class InfoPosition
+{
+    public float x;
+    public float y;
+    public float z;
+}

@@ -8,7 +8,7 @@ Modified by:
 Youssef Elashry 12/2020 (replaced obsolete functions and improved further - works with Python as well)
 Based on older work by Sandra Fang 2016 - Unity3D to MATLAB UDP communication - [url]http://msdn.microsoft.com/de-de/library/bb979228.aspx#ID0E3BAC[/url]
 */
-
+/*
 using UnityEngine;
 using System.Collections;
 using System;
@@ -156,4 +156,4 @@ public class InfoPosition
     public float x;
     public float y;
     public float z;
-}
+}*/

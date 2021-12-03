@@ -139,7 +139,7 @@ class StreetModel(ap.Model):
 
     def setup_agents_status(self):
         # Build initial status dictionary
-        self.agents_status = {"Cars": []}
+        init_agents_status = {"Cars": []}
         for a in self.grid.agents:
             start_pos =  self.grid.positions[a]
             new_car_dict = {
@@ -151,12 +151,12 @@ class StreetModel(ap.Model):
                 },
                 "Direction": a.direction
             }
-            self.agents_status["Cars"].append(new_car_dict)
+            init_agents_status["Cars"].append(new_car_dict)
 
-        STEPS["steps"].append(self.agents_status)
+        STEPS["steps"].append(init_agents_status)
 
         # Send initial status
-        status_json = json.dumps(self.agents_status)
+        #status_json = json.dumps(init_agents_status)
         #socket.SendData(status_json)
     
     def setup(self):
@@ -196,21 +196,29 @@ class StreetModel(ap.Model):
             #print(a, ":", a.id)
           #print(self.grid.positions[a])
         i = 0
+        agents_status = {"Cars": []}
         for a in self.grid.agents:
             new_pos, new_direction = a.find_new_cell(self.street_coords, self.intersections)
-            self.agents_status["Cars"][i]["Position"]["x"] = new_pos[0]
-            self.agents_status["Cars"][i]["Position"]["z"] = new_pos[1]
-            self.agents_status["Cars"][i]["Direction"] = new_direction
+            new_car_dict = {
+                "CarId": a.id,
+                "Position":{
+                    "x": new_pos[0],
+                    "y": 0,
+                    "z": new_pos[1]
+                },
+                "Direction": new_direction
+            }
+            agents_status["Cars"].append(new_car_dict)
             i += 1
 
         # Send new status
-        #status_json = json.dumps(self.agents_status)
+        #status_json = json.dumps(agents_status)
         #socket.SendData(status_json)
-        #print(self.agents_status)
-        STEPS["steps"].append(self.agents_status)
+        #print(agents_status)
+        STEPS["steps"].append(agents_status)
         
         self.num_moves += self.p.n_agents# print(self.num_moves)
-        time.sleep(0.2)
+        #time.sleep(0.2)
 
 
 parameters = {

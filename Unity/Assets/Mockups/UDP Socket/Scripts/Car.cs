@@ -31,7 +31,7 @@ public class Car : MonoBehaviour
 
     public void SetTargetRotation(string direction)
     {
-        Debug.Log(direction);
+        //Debug.Log(direction);
         if (direction == "right")
             targetRotation = new Vector3(0, 0, 0);
         else if (direction == "left")
