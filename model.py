@@ -33,6 +33,7 @@ class TrafficLight(ap.Agent):
         if self.time_duration == self.limit:
             if self.typeColor == 6:
                 self.typeColor = 5
+                self.time_duration = 0
             elif self.typeColor == 5:
                 self.typeColor = 6
                 self.time_duration = 0
