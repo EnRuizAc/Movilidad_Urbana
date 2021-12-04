@@ -58,6 +58,15 @@ public class InfoSteps
 public class InfoStatus
 {
     public List<InfoCar> Cars;
+    public List<InfoTrafficLights> TrafficLights;
+}
+
+[Serializable]
+public class InfoTrafficLights
+{
+    public int LightId;
+    public int TypeColor;
+    public string Direction;
 }
 
 [Serializable]

@@ -5,6 +5,10 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     public GameObject carPrefab;
+
+    public TrafficLights[] lights;
+
+
     InfoStatus _agents;
     List<Car> sceneCars = new List<Car>();
     public float dist_multiplier = 2;
@@ -12,6 +16,7 @@ public class SpawnManager : MonoBehaviour
 
     public void UpdateAgents(InfoStatus agents)
     {
+
         // Esto se ejecutaria una s�la vez.
         if(_agents == null)
         {
@@ -39,6 +44,8 @@ public class SpawnManager : MonoBehaviour
             car.SetTargetRotation(agents.Cars[i].Direction);
             car.SetTargetPosition(newPosition);
         }
+
+        
     }
 
     public void RunModel(InfoSteps modelSteps)
@@ -52,8 +59,18 @@ public class SpawnManager : MonoBehaviour
         for (int i = 0; i < modelSteps.steps.Count; i++)
         {
             currentStatus = modelSteps.steps[i];
+            UpdateLights(currentStatus);
             UpdateAgents(currentStatus);
             yield return new WaitForSeconds(wait);
+        }
+    }
+
+    private void UpdateLights(InfoStatus infoStatus)
+    {
+        for (int i = 0; i < infoStatus.TrafficLights.Count; i++)
+        {
+            InfoTrafficLights light = infoStatus.TrafficLights[i];
+            lights[i].SetColor(light.TypeColor);
         }
     }
 }

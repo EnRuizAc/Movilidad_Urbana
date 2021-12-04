@@ -248,7 +248,7 @@ parameters = {
     'n_agents': 1,
     'height': 20,
     'width': 20,
-    'steps': 20
+    'steps': 50
 }
 
 def animation_plot(model, ax):
