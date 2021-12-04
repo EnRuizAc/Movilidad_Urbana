@@ -23,7 +23,7 @@ class TrafficLight(ap.Agent):
         # 6 = red 5 = green
         self.typeColor = 6
         self.time_duration = 0
-        self.limit = 5
+        self.limit = 10
         self.direction = ""
         self.position = (0, 0)
     def set_direction(self, direction):
